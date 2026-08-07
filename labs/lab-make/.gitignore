@@ -1,0 +1,19 @@
+# Ejecutables
+suma
+scanner2
+calc3
+programa
+
+# Archivos generados por Flex
+lex.yy.c
+
+# Archivos generados por Bison
+*.tab.c
+*.tab.h
+
+# Archivos objeto
+*.o
+
+# Directorios de IDEs
+.vscode/
+.idea/

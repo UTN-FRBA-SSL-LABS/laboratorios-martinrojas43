@@ -1,0 +1,14 @@
+# Directorios docentes. La barra final indica sincronización completa.
+.github/
+scripts/
+
+# Infraestructura común.
+Makefile
+README.md
+.gitignore
+.grading-protected
+.grading-version
+
+# Archivos docentes dentro de cada laboratorio.
+labs/*/.gitignore
+labs/*/test_local.sh

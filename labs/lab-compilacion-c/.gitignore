@@ -1,0 +1,18 @@
+# Archivos objeto binarios — no van en git
+programa.o
+matematica.o
+
+# Ejecutables (sin extensión en Linux/macOS)
+programa
+programa_debug
+programa_ci
+programa_enlazado
+
+# Ejecutables Windows
+*.exe
+
+# Símbolos de depuración macOS
+*.dSYM/
+
+# Archivos de entorno
+.DS_Store

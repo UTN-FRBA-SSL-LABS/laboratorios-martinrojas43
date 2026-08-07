@@ -1,0 +1,284 @@
+name: Grading de laboratorios
+
+on:
+  push:
+    branches:
+      - "**"
+
+concurrency:
+  group: grading-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  restaurar-infraestructura:
+    name: Restaurar infraestructura docente
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      restaurado: ${{ steps.restaurar.outputs.restored }}
+      canonical_sha: ${{ steps.restaurar.outputs.canonical_sha }}
+      submission_sha: ${{ steps.entrega.outputs.sha }}
+    steps:
+      - name: Checkout de la entrega
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Descargar infraestructura oficial
+        uses: actions/checkout@v4
+        with:
+          repository: UTN-FRBA-SSL-LABS/laboratorios
+          ref: main
+          path: .grading
+          persist-credentials: false
+
+      - name: Comparar y restaurar archivos protegidos
+        id: restaurar
+        env:
+          CANONICAL_ROOT: ${{ github.workspace }}/.grading
+          GITHUB_ACTOR: ${{ github.actor }}
+          OWNER_ACTOR: santiagoferreiros
+          RESTORE_PUSH: "true"
+          SUBMISSION_ROOT: ${{ github.workspace }}
+        run: ./.grading/scripts/restore-protected-files.sh
+
+      - name: Informar restauración
+        if: steps.restaurar.outputs.restored == 'true'
+        shell: bash
+        run: |
+          {
+            echo "## Infraestructura restaurada"
+            echo ""
+            echo "El push modificó archivos docentes. Se repuso la versión oficial y se creó un commit correctivo."
+            echo "Los cambios válidos del laboratorio se calificarán sobre el commit corregido."
+            echo "Versión canónica: \`${{ steps.restaurar.outputs.canonical_sha }}\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Identificar commit a calificar
+        id: entrega
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  detectar-cambios:
+    name: Detectar laboratorios modificados
+    needs: restaurar-infraestructura
+    runs-on: ubuntu-latest
+    outputs:
+      labs: ${{ steps.detectar.outputs.labs }}
+      hay_cambios: ${{ steps.detectar.outputs.hay_cambios }}
+      submission_sha: ${{ steps.detectar.outputs.submission_sha }}
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.restaurar-infraestructura.outputs.submission_sha }}
+
+      - name: Construir matriz de laboratorios
+        id: detectar
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ needs.restaurar-infraestructura.outputs.submission_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TODOS=(
+            lab-github
+            lab-compilacion-c
+            lab-string
+            laboratorio-testing-c
+            lab-make
+            lab-flex
+            lab-bison
+          )
+          CAMBIADOS=()
+
+          INICIO="$BEFORE_SHA"
+          if [[ -z "$INICIO" || "$INICIO" =~ ^0+$ ]]; then
+            INICIO="$(git hash-object -t tree /dev/null)"
+          fi
+
+          ARCHIVOS=()
+          while IFS= read -r archivo; do
+            ARCHIVOS+=("$archivo")
+          done < <(git diff --name-only "$INICIO" "$HEAD_SHA")
+
+          ejecutar_todos=false
+          for archivo in "${ARCHIVOS[@]}"; do
+            case "$archivo" in
+              .github/*|.github/**/*|scripts/*|scripts/**/*|Makefile|.grading-protected|.grading-version)
+                ejecutar_todos=true
+                break
+                ;;
+            esac
+          done
+
+          if [[ "$ejecutar_todos" == "true" ]]; then
+            CAMBIADOS=("${TODOS[@]}")
+          else
+            for lab in "${TODOS[@]}"; do
+              for archivo in "${ARCHIVOS[@]}"; do
+                if [[ "$archivo" == "labs/$lab/"* ]]; then
+                  CAMBIADOS+=("$lab")
+                  break
+                fi
+              done
+            done
+          fi
+
+          if ((${#CAMBIADOS[@]} == 0)); then
+            JSON='[]'
+            echo "hay_cambios=false" >> "$GITHUB_OUTPUT"
+          else
+            JSON="$(printf '%s\n' "${CAMBIADOS[@]}" | jq -R . | jq -cs .)"
+            echo "hay_cambios=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "labs=$JSON" >> "$GITHUB_OUTPUT"
+          echo "submission_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "Laboratorios seleccionados: $JSON"
+
+  verificar:
+    name: Grading · ${{ matrix.lab }}
+    needs: detectar-cambios
+    if: needs.detectar-cambios.outputs.hay_cambios == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: ${{ fromJSON(needs.detectar-cambios.outputs.labs) }}
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.detectar-cambios.outputs.submission_sha }}
+          fetch-depth: 0
+
+      - name: Descargar grading oficial
+        uses: actions/checkout@v4
+        with:
+          repository: UTN-FRBA-SSL-LABS/laboratorios
+          ref: main
+          path: .grading
+          persist-credentials: false
+
+      - name: Instalar dependencias
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ matrix.lab }}" in
+            lab-bison|lab-make)
+              paquetes=(gcc make flex bison)
+              ;;
+            lab-flex)
+              paquetes=(gcc make flex)
+              ;;
+            lab-compilacion-c)
+              paquetes=(gcc make binutils)
+              ;;
+            *)
+              paquetes=(gcc make)
+              ;;
+          esac
+          sudo apt-get update
+          sudo apt-get install -y "${paquetes[@]}"
+
+      - name: Ejecutar grading
+        id: grading
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GRADE_DIR: ${{ runner.temp }}/calificaciones
+          MIN_SCORE: "60"
+          GRADE_COMMIT_SHA: ${{ needs.detectar-cambios.outputs.submission_sha }}
+          SUBMISSION_ROOT: ${{ github.workspace }}
+        run: ./.grading/scripts/grade-lab.sh "${{ matrix.lab }}"
+
+      - name: Escribir nota en el resumen
+        if: always()
+        env:
+          ARCHIVO: ${{ runner.temp }}/calificaciones/${{ matrix.lab }}.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "## Calificación · ${{ matrix.lab }}"
+            echo ""
+            jq -r '"**Nota:** \(.score) / \(.max_score) — **Estado:** \(.status)"' "$ARCHIVO"
+            echo ""
+            echo "Commit: \`${{ needs.detectar-cambios.outputs.submission_sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar nota del laboratorio
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calificacion-${{ matrix.lab }}
+          path: |
+            ${{ runner.temp }}/calificaciones/${{ matrix.lab }}.json
+            ${{ runner.temp }}/calificaciones/${{ matrix.lab }}.md
+            ${{ runner.temp }}/calificaciones/${{ matrix.lab }}.log
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Marcar el grading como desaprobado
+        if: steps.grading.outcome == 'failure'
+        run: exit 1
+
+  consolidar-notas:
+    name: Consolidar notas del push
+    needs:
+      - detectar-cambios
+      - verificar
+    if: always() && needs.detectar-cambios.outputs.hay_cambios == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar notas individuales
+        uses: actions/download-artifact@v4
+        with:
+          pattern: calificacion-*
+          path: calificaciones
+          merge-multiple: true
+
+      - name: Generar JSON y resumen consolidado
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -s 'sort_by(.lab)' calificaciones/*.json > calificaciones.json
+
+          {
+            echo "## Calificaciones del push"
+            echo ""
+            echo "| Laboratorio | Nota | Estado |"
+            echo "| --- | ---: | --- |"
+            for archivo in calificaciones/*.json; do
+              jq -r '"| \(.lab) | \(.score) / \(.max_score) | \(.status) |"' "$archivo"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          {
+            echo "# Calificaciones del push"
+            echo ""
+            echo "| Laboratorio | Nota | Estado |"
+            echo "| --- | ---: | --- |"
+            for archivo in calificaciones/*.json; do
+              jq -r '"| \(.lab) | \(.score) / \(.max_score) | \(.status) |"' "$archivo"
+            done
+          } > calificaciones.md
+
+      - name: Guardar notas consolidadas
+        uses: actions/upload-artifact@v4
+        with:
+          name: calificaciones
+          path: |
+            calificaciones.json
+            calificaciones.md
+          if-no-files-found: error
+          retention-days: 30

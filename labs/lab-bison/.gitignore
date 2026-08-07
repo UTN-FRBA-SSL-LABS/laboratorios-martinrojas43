@@ -1,0 +1,15 @@
+# Archivos generados por Bison
+*.tab.c
+*.tab.h
+
+# Archivos generados por Flex
+lex.yy.c
+
+# Ejecutables
+calc1
+calc2
+calc3
+calc4
+
+# Objetos
+*.o
