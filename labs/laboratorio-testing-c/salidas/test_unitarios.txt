@@ -1,0 +1,15 @@
+=== Tests unitarios ===
+[carrito nuevo]
+  [OK]   carrito_contar(&c) == 0
+
+[agregar un producto]
+  [OK]   carrito_agregar(&c, p) == 1
+  [OK]   carrito_contar(&c) == 1
+
+[total: un producto, cantidad 1]
+  [OK]   carrito_total(&c) == 350
+
+[total: un producto, cantidad 2]
+  [OK]   carrito_total(&c) == 700
+
+--- 5/5 tests OK ---
