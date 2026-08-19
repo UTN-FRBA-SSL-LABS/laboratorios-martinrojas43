@@ -1,15 +1,5 @@
-# Archivos generados por Bison
-*.tab.c
-*.tab.h
-
-# Archivos generados por Flex
-lex.yy.c
-
-# Ejecutables
-calc1
-calc2
-calc3
-calc4
-
-# Objetos
-*.o
+# Executable files (without extension)
+/ejercicio1/calc1
+/ejercicio2/calc2
+/ejercicio3/calc3
+/ejercicio4/calc4

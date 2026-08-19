@@ -1,0 +1,148 @@
+# Set the default behavior for all files
+#* text=auto eol=lf
+
+# Git files
+.gitattributes text eol=lf export-ignore
+.gitignore text eol=lf export-ignore
+
+# GitHub files
+/.github/** export-ignore
+/.github/CODEOWNERS text eol=lf
+
+# Pre-commit files
+/.clang-format text eol=lf export-ignore
+/.pre-commit-config.yaml export-ignore
+/install_precommit.sh export-ignore
+/PRECOMMIT.md eol=lf export-ignore
+
+# Grading files
+/.grading-protected text eol=lf export-ignore
+/.grading-version text eol=lf export-ignore
+
+# C/C++ files
+*.c text eol=lf diff=cpp whitespace=trailing-space,space-before-tab,blank-at-eol,blank-at-eof,indent-with-non-tab,incomplete-line
+*.h text eol=lf diff=cpp whitespace=trailing-space,space-before-tab,blank-at-eol,blank-at-eof,indent-with-non-tab,incomplete-line
+*.i text eol=lf diff=cpp whitespace=trailing-space,space-before-tab,blank-at-eol,blank-at-eof,indent-with-non-tab,incomplete-line
+
+# Lex files
+*.l text eol=lf whitespace=trailing-space,space-before-tab,blank-at-eol,blank-at-eof,indent-with-non-tab,incomplete-line
+
+# Yacc files
+*.y text eol=lf whitespace=trailing-space,space-before-tab,blank-at-eol,blank-at-eof,indent-with-non-tab,incomplete-line
+
+# Python files
+*.py text eol=lf diff=python
+
+# Makefiles
+GNUmakefile text eol=lf
+makefile text eol=lf
+Makefile text eol=lf
+*.mk text eol=lf
+
+# Project files
+README text eol=lf
+LICENSE text eol=lf
+NOTICE text eol=lf
+CHANGELOG text eol=lf
+VERSION text eol=lf export-subst
+INSTALL text eol=lf
+COPYING text eol=lf
+AUTHORS text eol=lf
+CREDITS text eol=lf
+
+# Visual Studio Code Workspace files
+*.code-workspace text eol=lf
+
+# Markdown files
+*.md text eol=lf diff=markdown
+*.markdown text eol=lf diff=markdown
+
+# YAML files
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Text files
+*.txt text eol=lf
+*.TXT text eol=lf
+
+# Shell scripts
+*.sh text eol=lf diff=bash
+
+# Windows scripts
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Config files
+*.ini text eol=lf diff=ini
+*.cnf text eol=lf
+*.conf text eol=lf
+*.config text eol=lf
+*.xml text eol=lf
+
+# Log files
+*.log text eol=lf
+
+# JSON files
+*.json text eol=lf
+
+# IntelliJ files
+*.iml text eol=lf
+
+# Binary files
+*.dat binary
+*.data binary
+*.exe binary
+*.aarch64 binary
+*.darwin binary
+*.linux binary
+*.freebsd binary
+
+# Archive files
+*.zip binary
+*.tar binary
+*.gz binary
+*.tgz binary
+*.7z binary
+
+# Document files
+*.pdf binary
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+*.ppt binary
+*.pptx binary
+*.csv text eol=lf
+
+# Font files
+*.ttf binary
+*.woff binary
+*.woff2 binary
+
+# Image files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text eol=lf
+*.tif binary
+*.tiff binary
+*.bmp binary
+
+# Audio files
+*.mp3 binary
+*.ogg binary
+*.opus binary
+*.wav binary
+
+# Video files
+*.mp4 binary
+*.mov binary
+*.avi binary
+*.wmv binary
+*.flv binary
+*.mkv binary
+
+# Subtitle files
+*.vtt text eol=lf

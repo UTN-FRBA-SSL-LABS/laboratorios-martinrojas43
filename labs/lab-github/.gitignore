@@ -1,2 +1,2 @@
-*.o
-calculadora
+# Executable files (without extension)
+/calculadora

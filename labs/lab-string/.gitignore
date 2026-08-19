@@ -1,8 +1,8 @@
-*.o
-StringTest
-ConversionTest
-enlineas
-longitudes
-mayorlongitud
-todosiguales
-suma
+# Executable files (without extension)
+/StringTest
+/ConversionTest
+/enlineas
+/longitudes
+/mayorlongitud
+/todosiguales
+/suma

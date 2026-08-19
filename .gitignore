@@ -1,1 +1,143 @@
+
+# Hidden files
+.*
+
+# Visual Studio Code files
+!**/.vscode/
+**/.vscode/**
+!**/.vscode/c_cpp_properties.json
+!**/.vscode/launch.json
+!**/.vscode/settings.json
+!**/.vscode/tasks.json
+
+# Git files
+!.gitignore
+!.gitattributes
+
+# GitHub files
+!/.github/
+!/.github/**
+
+# Pre-commit files
+!/.clang-format
+!/.pre-commit-config.yaml
+
+# Grading files
 /calificaciones/
+!/.grading-protected
+!/.grading-version
+
+# Log files
+*.log
+
+# Config files
+*.config
+
+# Data files
+*.dat
+
+# Dump files
+*.dmp
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Makefile
+#GNUmakefile
+#makefile
+#Makefile
+#mkframework/**
+
+# Tests output folders
+**/tests/output/actual/
+
+# Generated folders
+.deps/
+obj/
+bin/
+
+# Lex-generated files
+lex.yy.c
+*.lex.yy.c
+
+# Yacc-generated files
+*.tab.c
+*.tab.h
+*.output
+
+# Prerequisite files
+*.d
+*.d.timestamp
+
+# Preprocessed files
+#*.i
+# Generated-only preprocessed files
+obj/*.i
+
+# Assembly files
+*.s
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Code coverage files
+*.gcda
+*.gcno
+*.gcov
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/

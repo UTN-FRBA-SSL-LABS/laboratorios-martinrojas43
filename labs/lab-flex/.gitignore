@@ -1,13 +1,5 @@
-lex.yy.c
-scanner1
-scanner2
-scanner3
-scanner4
-scanner1.exe
-scanner2.exe
-scanner3.exe
-scanner4.exe
-*.yml
-*.json
-*.o
-
+# Executable files (without extension)
+/ejercicio1/scanner1
+/ejercicio2/scanner2
+/ejercicio3/scanner3
+/ejercicio4/scanner4
