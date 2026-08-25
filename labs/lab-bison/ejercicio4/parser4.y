@@ -26,16 +26,10 @@ input:
  * descarta tokens hasta encontrar el símbolo de sincronización (acá '\n')
  * y continúa parseando la siguiente línea.
  * Llamar a yyerrok dentro de la acción resetea el estado de error interno.
- *
- * TODO 1 — Agregar en la producción 'linea' una regla de recuperación de errores.
- *   Cuando el parser encuentra tokens inválidos, descarta hasta el '\n'
- *   y retoma el parseo de la siguiente línea.
- *
- *   Agregá esta alternativa dentro de 'linea':
- *     | error '\n'  { yyerrok; printf("Error: sintaxis invalida\n"); }
  */
 linea:
     exp '\n'    { printf("= %d\n", $1); }
+  | error '\n'  { yyerrok; printf("Error: sintaxis invalida\n"); }
   ;
 
 exp:
